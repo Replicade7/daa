@@ -27,6 +27,7 @@ function Leaf:CreateWindow(config)
         end
     end
 
+    -- Создание мини-меню
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
     local UICornerMini = Instance.new("UICorner")
@@ -63,6 +64,7 @@ function Leaf:CreateWindow(config)
     Bmenu.Text = ""
     Bmenu.TextTransparency = 1
 
+    -- Создание главного меню
     local ScreenGui = Instance.new("ScreenGui")
     local MenuFrame = Instance.new("Frame")
     local Mainframe = Instance.new("Frame")
@@ -638,7 +640,7 @@ function Leaf:CreateWindow(config)
         
         function tab:CreateColorPicker(props)
             local Name = props.Name
-            local Color = props.Color
+            local Color = props.Color or window.accentColor
             local Callback = props.Callback
             
             local ColorPickerFrame = Instance.new("Frame")
@@ -673,6 +675,11 @@ function Leaf:CreateWindow(config)
             
             UICornerCI.CornerRadius = UDim.new(0, 4)
             UICornerCI.Parent = ColorIndicator
+            
+            -- Если это основной цвет меню, добавляем индикатор в систему обновления
+            if props.IsAccentColor then
+                window:AddAccentElement(ColorIndicator, "BackgroundColor3")
+            end
             
             PickButton.Parent = ColorPickerFrame
             PickButton.BackgroundTransparency = 1
