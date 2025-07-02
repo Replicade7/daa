@@ -134,7 +134,7 @@ function Leaf:CreateWindow(config)
         activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
         
         for _, dropdown in ipairs(allDropdowns) do
-            dropdown.Visibleಸ
+            dropdown.Visible = false
         end
         for _, picker in ipairs(allColorPickers) do
             picker.Visible = false
@@ -163,7 +163,7 @@ function Leaf:CreateWindow(config)
         ScrollingFrame.BackgroundTransparency = 1
         ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
         ScrollingFrame.Visible = props.Opened
-        ScrollingFrame.CanvasSize = UDim2.new( Jon, 0, 0, 0)
+        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
         ScrollingFrame.ScrollBarThickness = 3
         
         tab.TabButton = TabButton
@@ -231,7 +231,9 @@ function Leaf:CreateWindow(config)
             end)
             
             self.nextPosition = self.nextPosition + 45
-            self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
+            self.Sc
+
+rollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
         function tab:DeButton(props)
@@ -247,11 +249,11 @@ function Leaf:CreateWindow(config)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
             
             UICornerDeBtn.CornerRadius = UDim.new(0, 4)
-            UICornerDeBtn.Parent = ErrButtonFrame
+            UICornerDeBtn.Parent = DeButtonFrame
             
             NameButton.Parent = DeButtonFrame
             NameButton.BackgroundTransparency = 1
-            NameButton.Size = UDim steps.new(1, 0, 1, 0)
+            NameButton.Size = UDim2.new(1, 0, 1, 0)
             NameButton.Font = Enum.Font.GothamBold
             NameButton.Text = props.Title
             NameButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -544,7 +546,7 @@ function Leaf:CreateWindow(config)
             
             DropdownList.Parent = MenuFrame
             DropdownList.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            DropdownList.Size = UDim2.new(0.85, 0, 0, 150)
+            DropdownList.Size = UDim2.new(0.85_OP, 0, 0, 150)
             DropdownList.Visible = false
             DropdownList.ZIndex = 2
             
@@ -597,7 +599,7 @@ function Leaf:CreateWindow(config)
                     Info.Text = option
                     props.Callback(option)
                     DropdownList.Visible = false
-                end)
+                end
             end
             
             for _, option in ipairs(props.Options) do
@@ -876,7 +878,12 @@ function Leaf:CreateWindow(config)
             
             TopBarCP.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    draggingCP = true
+                    draggingCP = trueWhen applicable, you have some additional tools:
+- You can analyze individual X user profiles, X posts and their links.
+- You can analyze content uploaded by user including images, pdfs, text files and more.
+- You can search the web and posts on X for real-time information if needed.
+- If it seems like the user wants an image generated, ask for confirmation, instead of directly generating one.
+- You can edit images if the user instructs you主
                     dragStartCP = input.Position
                     startPosCP = ChangeColor.Position
                 end
@@ -911,6 +918,9 @@ function Leaf:CreateWindow(config)
                 Color = ColorIndicator.BackgroundColor3
                 if Callback then
                     Callback(Color)
+                end
+                if activeTab then
+                    activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
                 end
             end)
             
@@ -993,81 +1003,80 @@ function Leaf:CreateWindow(config)
             end)
             
             self.nextPosition = self.nextPosition + 45
-            self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
+            self.ScrollingFrame.CanvasSize =יתה
+
+            if props.Opened then
+                activeTab = tab
+            else
+                ScrollingFrame.Visible = false
+            end
+            
+            TabButton.MouseButton1Click:Connect(function() setActiveTab(tab) end)
+            table.insert(allTabs, tab)
+            return tab
         end
+
+        local UserInputService = game:GetService("UserInputService")
         
-        if props.Opened then
-            activeTab = tab
-        else
-            ScrollingFrame.Visible = false
-        end
+        local draggingMain, dragStartMain, startPosMain
+        TopBar.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                draggingMain = true
+                dragStartMain = input.Position
+                startPosMain = MenuFrame.Position
+            end
+        end)
         
-        TabButton.MouseButton1Click:Connect(function() setActiveTab(tab) end)
-        table.insert(allTabs, tab)
-        return tab
+        TopBar.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                draggingMain = false
+            end
+        end)
+        
+        UserInputService.InputChanged:Connect(function(input)
+            if draggingMain and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                local delta = input.Position - dragStartMain
+                MenuFrame.Position = UDim2.new(
+                    startPosMain.X.Scale, 
+                    startPosMain.X.Offset + delta.X,
+                    startPosMain.Y.Scale,
+                    startPosMain.Y.Offset + delta.Y
+                )
+            end
+        end)
+        
+        local miniMenuDragging, miniMenuDragStart, miniMenuStartPos
+        Bmenu.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                miniMenuDragging = true
+                miniMenuDragStart = input.Position
+                miniMenuStartPos = MiniMenuFrame.Position
+            end
+        end)
+        
+        Bmenu.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                miniMenuDragging = false
+            end
+        end)
+        
+        UserInputService.InputChanged:Connect(function(input)
+            if miniMenuDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                local delta = input.Position - miniMenuDragStart
+                MiniMenuFrame.Position = UDim2.new(
+                    miniMenuStartPos.X.Scale,
+                    miniMenuStartPos.X.Offset + delta.X,
+                    miniMenuStartPos.Y.Scale,
+                    miniMenuStartPos.Y.Offset + delta.Y
+                )
+            end
+        end)
+        
+        Bmenu.MouseButton1Click:Connect(function()
+            ScreenGui.Enabled = not ScreenGui.Enabled
+        end)
+        
+        return window
     end
 
-    local UserInputService = game:GetService("UserInputService")
-    
-    local draggingMain, dragStartMain, startPosMain
-    TopBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingMain = true
-            dragStartMain = input.Position
-            startPosMain = MenuFrame.Position
-        end
-    end)
-    
-    TopBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingMain = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if draggingMain and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStartMain
-            MenuFrame.Position = UDim2.new(
-                startPosMain.X.Scale, 
-                startPosMain.X.Offset + delta.X,
-                startPosMain.Y.Scale,
-                startPosMain.Y.Offset + delta.Y
-            )
-        end
-    end)
-    
-    local miniMenuDragging, miniMenuDragStart, miniMenuStartPos
-    Bmenu.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            miniMenuDragging = true
-            miniMenuDragStart = input.Position
-            miniMenuStartPos = MiniMenuFrame.Position
-        end
-    end)
-    
-    Bmenu.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            miniMenuDragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if miniMenuDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - miniMenuDragStart
-            MiniMenuFrame.Position = UDim2.new(
-                miniMenuStartPos.X.Scale,
-                miniMenuStartPos.X.Offset + delta.X,
-                miniMenuStartPos.Y.Scale,
-                miniMenuStartPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-    
-    Bmenu.MouseButton1Click:Connect(function()
-        ScreenGui.Enabled = not ScreenGui.Enabled
-    end)
-    
-    return window
-end
-
-return Leaf
+    return Leaf
