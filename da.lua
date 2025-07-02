@@ -134,7 +134,7 @@ function Leaf:CreateWindow(config)
         activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
         
         for _, dropdown in ipairs(allDropdowns) do
-            dropdown.Visible = false
+            dropdown.Visibleಸ
         end
         for _, picker in ipairs(allColorPickers) do
             picker.Visible = false
@@ -163,7 +163,7 @@ function Leaf:CreateWindow(config)
         ScrollingFrame.BackgroundTransparency = 1
         ScrollingFrame.Size = UDim2.new(1, 0, 1, 0)
         ScrollingFrame.Visible = props.Opened
-        ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        ScrollingFrame.CanvasSize = UDim2.new( Jon, 0, 0, 0)
         ScrollingFrame.ScrollBarThickness = 3
         
         tab.TabButton = TabButton
@@ -247,11 +247,11 @@ function Leaf:CreateWindow(config)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
             
             UICornerDeBtn.CornerRadius = UDim.new(0, 4)
-            UICornerDeBtn.Parent = DeButtonFrame
+            UICornerDeBtn.Parent = ErrButtonFrame
             
             NameButton.Parent = DeButtonFrame
             NameButton.BackgroundTransparency = 1
-            NameButton.Size = UDim2.new(1, 0, 1, 0)
+            NameButton.Size = UDim steps.new(1, 0, 1, 0)
             NameButton.Font = Enum.Font.GothamBold
             NameButton.Text = props.Title
             NameButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -833,6 +833,7 @@ function Leaf:CreateWindow(config)
             local function updateColor()
                 local newColor = Color3.fromHSV(currentHue, currentSat, currentVal)
                 ColorIndicator.BackgroundColor3 = newColor
+                Leaf.MenuColorValue.Value = newColor
             end
             
             local function updateHueSelector(input)
