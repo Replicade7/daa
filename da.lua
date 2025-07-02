@@ -1,28 +1,14 @@
 local Leaf = {}
-local Menu_Color = Color3.new(1, 1, 1)
-Leaf.Windows = {}
-
-function Leaf:SetMenuColor(newColor)
-    Menu_Color = newColor
-    for _, window in ipairs(self.Windows) do
-        window:updateAccent(newColor)
-    end
-end
 
 function Leaf:CreateWindow(config)
     local window = {}
-    window.accents = {}
-    table.insert(Leaf.Windows, window)
+    window.accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    window.staticColorElements = {}
+    window.toggles = {}
+    window.sliders = {}
+    window.sections = {}
+    window.dropdowns = {}
     
-    function window:updateAccent(color)
-        for _, item in ipairs(self.accents) do
-            item.object[item.property] = color
-        end
-        if self.activeTab then
-            self.activeTab.TabButton.ImageColor3 = color
-        end
-    end
-
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
     local UICornerMini = Instance.new("UICorner")
@@ -49,9 +35,8 @@ function Leaf:CreateWindow(config)
     ImageMiniMenu.Position = UDim2.new(0.14, 0, 0.14, 0)
     ImageMiniMenu.Size = UDim2.new(0, 35, 0, 35)
     ImageMiniMenu.Image = "rbxassetid://"..config.LogoID
-    ImageMiniMenu.ImageColor3 = Menu_Color
-    
-    table.insert(window.accents, {object = ImageMiniMenu, property = "ImageColor3"})
+    ImageMiniMenu.ImageColor3 = window.accentColor
+    table.insert(window.staticColorElements, {element = ImageMiniMenu, property = "ImageColor3"})
     
     Bmenu.Name = "Bmenu"
     Bmenu.Parent = MiniMenuFrame
@@ -93,9 +78,9 @@ function Leaf:CreateWindow(config)
     
     MainframeUIStroke.Name = "MainframeUIStroke"
     MainframeUIStroke.Parent = Mainframe
-    MainframeUIStroke.Color = Menu_Color
+    MainframeUIStroke.Color = window.accentColor
     MainframeUIStroke.Thickness = 2
-    table.insert(window.accents, {object = MainframeUIStroke, property = "Color"})
+    table.insert(window.staticColorElements, {element = MainframeUIStroke, property = "Color"})
     
     TopBar.Name = "TopBar"
     TopBar.Parent = Mainframe
@@ -108,9 +93,9 @@ function Leaf:CreateWindow(config)
     
     TopBarUIStroke.Name = "TopBarUIStroke"
     TopBarUIStroke.Parent = TopBar
-    TopBarUIStroke.Color = Menu_Color
+    TopBarUIStroke.Color = window.accentColor
     TopBarUIStroke.Thickness = 2
-    table.insert(window.accents, {object = TopBarUIStroke, property = "Color"})
+    table.insert(window.staticColorElements, {element = TopBarUIStroke, property = "Color"})
     
     TextLabel.Parent = TopBar
     TextLabel.BackgroundTransparency = 1
@@ -123,17 +108,18 @@ function Leaf:CreateWindow(config)
     TextLabel.TextXAlignment = Enum.TextXAlignment.Left
 
     local allTabs = {}
+    local activeTab
     local allDropdowns = {}
     local allColorPickers = {}
     
     local function setActiveTab(tab)
-        if window.activeTab then
-            window.activeTab.ScrollingFrame.Visible = false
-            window.activeTab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
+        if activeTab then
+            activeTab.ScrollingFrame.Visible = false
+            activeTab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
         end
-        window.activeTab = tab
-        window.activeTab.ScrollingFrame.Visible = true
-        window.activeTab.TabButton.ImageColor3 = Menu_Color
+        activeTab = tab
+        activeTab.ScrollingFrame.Visible = true
+        activeTab.TabButton.ImageColor3 = window.accentColor
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
@@ -145,7 +131,7 @@ function Leaf:CreateWindow(config)
     
     function window:CreateTab(props)
         local tab = {}
-        tab.window = window
+        tab.window = self
         local TabButton = Instance.new("ImageButton")
         local UICornerTab = Instance.new("UICorner")
         
@@ -155,7 +141,7 @@ function Leaf:CreateWindow(config)
         TabButton.Position = UDim2.new(0.64 + (#allTabs * 0.11), 0, 0.04, 0)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
-        TabButton.ImageColor3 = props.Opened and Menu_Color or Color3.fromRGB(130, 130, 130)
+        TabButton.ImageColor3 = props.Opened and window.accentColor or Color3.fromRGB(130, 130, 130)
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -216,10 +202,10 @@ function Leaf:CreateWindow(config)
             local runService = game:GetService("RunService")
             
             TextButton.MouseButton1Click:Connect(function()
-                clickCount += 1
+                clickCount = clickCount + 1
                 local currentClick = clickCount
                 
-                Indicator.BackgroundColor3 = Menu_Color
+                Indicator.BackgroundColor3 = self.window.accentColor
                 
                 if props.Callback then pcall(props.Callback) end
                 
@@ -233,7 +219,7 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -244,10 +230,9 @@ function Leaf:CreateWindow(config)
             local TextButton = Instance.new("TextButton")
             
             DeButtonFrame.Parent = self.ScrollingFrame
-            DeButtonFrame.BackgroundColor3 = Menu_Color
+            DeButtonFrame.BackgroundColor3 = self.window.accentColor
             DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
-            table.insert(tab.window.accents, {object = DeButtonFrame, property = "BackgroundColor3"})
             
             UICornerDeBtn.CornerRadius = UDim.new(0, 4)
             UICornerDeBtn.Parent = DeButtonFrame
@@ -269,7 +254,7 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback) end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -328,7 +313,7 @@ function Leaf:CreateWindow(config)
             local function updateToggle()
                 if state then
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
-                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Menu_Color}):Play()
+                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = self.window.accentColor}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
@@ -345,7 +330,10 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback, state) end
             end)
             
-            self.nextPosition += 45
+            local toggle = {updateToggle = updateToggle}
+            table.insert(self.window.toggles, toggle)
+            
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -391,9 +379,8 @@ function Leaf:CreateWindow(config)
             UICornerFill.Parent = Fill
             
             Progress.Parent = Fill
-            Progress.BackgroundColor3 = Menu_Color
+            Progress.BackgroundColor3 = self.window.accentColor
             Progress.Size = UDim2.new(0, 0, 1, 0)
-            table.insert(tab.window.accents, {object = Progress, property = "BackgroundColor3"})
             
             UICornerProg.CornerRadius = UDim.new(0, 4)
             UICornerProg.Parent = Progress
@@ -455,7 +442,8 @@ function Leaf:CreateWindow(config)
             end)
             
             updateSlider(default)
-            self.nextPosition += 55
+            table.insert(self.window.sliders, Progress)
+            self.nextPosition = self.nextPosition + 55
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -482,12 +470,12 @@ function Leaf:CreateWindow(config)
             SectionTitle.TextSize = 16
             
             Underline.Parent = SectionFrame
-            Underline.BackgroundColor3 = Menu_Color
+            Underline.BackgroundColor3 = self.window.accentColor
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
-            table.insert(tab.window.accents, {object = Underline, property = "BackgroundColor3"})
             
-            self.nextPosition += 30
+            table.insert(self.window.sections, Underline)
+            self.nextPosition = self.nextPosition + 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -527,14 +515,13 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             Info.Parent = DropdownFrame
-            Info.BackgroundColor3 = Menu_Color
+            Info.BackgroundColor3 = self.window.accentColor
             Info.Position = UDim2.new(0.7, 0, 0.2, 0)
             Info.Size = UDim2.new(0.25, 0, 0.6, 0)
             Info.Font = Enum.Font.GothamBold
             Info.Text = props.CurrentOption
             Info.TextColor3 = Color3.fromRGB(255, 255, 255)
             Info.TextSize = 14
-            table.insert(tab.window.accents, {object = Info, property = "BackgroundColor3"})
             
             UICornerInfo.CornerRadius = UDim.new(0, 4)
             UICornerInfo.Parent = Info
@@ -560,6 +547,8 @@ function Leaf:CreateWindow(config)
             UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
             UIListLayout.Padding = UDim.new(0, 5)
             
+            local dropdown = {info = Info, options = {}}
+            
             local function createOption(option)
                 local OptionFrame = Instance.new("Frame")
                 local UICornerOpt = Instance.new("UICorner")
@@ -579,10 +568,9 @@ function Leaf:CreateWindow(config)
                 OptionText.Size = UDim2.new(1, 0, 1, 0)
                 OptionText.Font = Enum.Font.GothamBold
                 OptionText.Text = option
-                OptionText.TextColor3 = Menu_Color
+                OptionText.TextColor3 = self.window.accentColor
                 OptionText.TextSize = 14
                 OptionText.ZIndex = 2
-                table.insert(tab.window.accents, {object = OptionText, property = "TextColor3"})
                 
                 OptionButton.Parent = OptionFrame
                 OptionButton.BackgroundTransparency = 1
@@ -595,6 +583,8 @@ function Leaf:CreateWindow(config)
                     props.Callback(option)
                     DropdownList.Visible = false
                 end)
+                
+                table.insert(dropdown.options, OptionText)
             end
             
             for _, option in ipairs(props.Options) do
@@ -621,7 +611,8 @@ function Leaf:CreateWindow(config)
             end)
             
             table.insert(allDropdowns, DropdownList)
-            self.nextPosition += 45
+            table.insert(self.window.dropdowns, dropdown)
+            self.nextPosition = self.nextPosition + 199
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -698,8 +689,8 @@ function Leaf:CreateWindow(config)
             local UIStroke = Instance.new("UIStroke")
             UIStroke.Parent = ChangeColor
             UIStroke.Thickness = 2
-            UIStroke.Color = Menu_Color
-            table.insert(tab.window.accents, {object = UIStroke, property = "Color"})
+            UIStroke.Color = self.window.accentColor
+            table.insert(self.window.staticColorElements, {element = UIStroke, property = "Color"})
             
             local ColorCanvas = Instance.new("Frame")
             ColorCanvas.Parent = ChangeColor
@@ -750,7 +741,7 @@ function Leaf:CreateWindow(config)
             
             local ApplyButton = Instance.new("TextButton")
             ApplyButton.Parent = ChangeColor
-            ApplyButton.BackgroundColor3 = Menu_Color
+            ApplyButton.BackgroundColor3 = self.window.accentColor
             ApplyButton.Position = UDim2.new(0.449, 0, 0.805, 0)
             ApplyButton.Size = UDim2.new(0, 60, 0, 27)
             ApplyButton.Font = Enum.Font.GothamBold
@@ -758,7 +749,7 @@ function Leaf:CreateWindow(config)
             ApplyButton.TextColor3 = Color3.new(1, 1, 1)
             ApplyButton.TextSize = 14
             ApplyButton.ZIndex = 5
-            table.insert(tab.window.accents, {object = ApplyButton, property = "BackgroundColor3"})
+            table.insert(self.window.staticColorElements, {element = ApplyButton, property = "BackgroundColor3"})
             
             local UICornerApply = Instance.new("UICorner")
             UICornerApply.CornerRadius = UDim.new(0, 4)
@@ -939,12 +930,8 @@ function Leaf:CreateWindow(config)
             end)
             
             table.insert(allColorPickers, ChangeColor)
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
-            
-            return {
-                Indicator = ColorIndicator
-            }
         end
         
         function tab:Input(props)
@@ -992,12 +979,12 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
         if props.Opened then
-            window.activeTab = tab
+            activeTab = tab
         else
             ScrollingFrame.Visible = false
         end
@@ -1005,6 +992,34 @@ function Leaf:CreateWindow(config)
         TabButton.MouseButton1Click:Connect(function() setActiveTab(tab) end)
         table.insert(allTabs, tab)
         return tab
+    end
+    
+    function window:UpdateColors()
+        for _, elem in ipairs(self.staticColorElements) do
+            elem.element[elem.property] = self.accentColor
+        end
+        for _, tab in ipairs(allTabs) do
+            if tab == activeTab then
+                tab.TabButton.ImageColor3 = self.accentColor
+            else
+                tab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
+            end
+        end
+        for _, toggle in ipairs(self.toggles) do
+            toggle.updateToggle()
+        end
+        for _, progress in ipairs(self.sliders) do
+            progress.BackgroundColor3 = self.accentColor
+        end
+        for _, underline in ipairs(self.sections) do
+            underline.BackgroundColor3 = self.accentColor
+        end
+        for _, dropdown in ipairs(self.dropdowns) do
+            dropdown.info.BackgroundColor3 = self.accentColor
+            for _, option in ipairs(dropdown.options) do
+                option.TextColor3 = self.accentColor
+            end
+        end
     end
 
     local UserInputService = game:GetService("UserInputService")
