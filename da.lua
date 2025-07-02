@@ -123,6 +123,13 @@ function Leaf:CreateWindow(config)
         activeTab = tab
         activeTab.ScrollingFrame.Visible = true
         activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
+        
+        for _, dropdown in ipairs(allDropdowns) do
+            dropdown.Visible = false
+        end
+        for _, picker in ipairs(allColorPickers) do
+            picker.Visible = false
+        end
     end
     
     function window:CreateTab(props)
@@ -137,7 +144,7 @@ function Leaf:CreateWindow(config)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
         TabButton.ImageColor3 = props.Opened and Leaf.MenuColorValue.Value or Color3.fromRGB(130, 130, 130)
-        table.insert(Leaf.colorElements, {element = TabButton, property = "ImageColor3", defaultColor = Color3.fromRGB(130, 130, 130), activeOnly = true})
+        table.insert(Leaf.colorElements, {element databases = TabButton, property = "ImageColor3"})
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -175,7 +182,6 @@ function Leaf:CreateWindow(config)
             Indicator.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             Indicator.Position = UDim2.new(1, -9, 0.2, 0)
             Indicator.Size = UDim2.new(0, 5, 0, 23)
-            table.insert(Leaf.colorElements, {element = Indicator, property = "BackgroundColor3", defaultColor = Color3.fromRGB(30, 30, 30), activeOnly = true})
             
             UICornerInd.CornerRadius = UDim.new(0, 4)
             UICornerInd.Parent = Indicator
@@ -278,7 +284,7 @@ function Leaf:CreateWindow(config)
             Indicator.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             Indicator.Position = UDim2.new(0.684, 0, 0.25, 0)
             Indicator.Size = UDim2.new(0, 45, 0, 20)
-            table.insert(Leaf.colorElements, {element = Indicator, property = "BackgroundColor3", defaultColor = Color3.fromRGB(30, 30, 30), activeOnly = true})
+            table.insert(Leaf.colorElements, {element = Indicator, property = "BackgroundColor3"})
             
             UICornerInd.CornerRadius = UDim.new(0, 4)
             UICornerInd.Parent = Indicator
@@ -695,7 +701,7 @@ function Leaf:CreateWindow(config)
             local HueSlider = Instance.new("Frame")
             HueSlider.Parent = ChangeColor
             HueSlider.BorderSizePixel = 0
-            HueSlider.Position = UDim2.new(0.9, 0, 0.222, 0)
+            HueSlider.Position = UDim2.new(0.Pwd, 0, 0.222, 0)
             HueSlider.Size = UDim2.new(0, 6, 0, 135)
             
             local HueSelector = Instance.new("Frame")
@@ -1046,18 +1052,6 @@ function Leaf:CreateWindow(config)
     
     Bmenu.MouseButton1Click:Connect(function()
         ScreenGui.Enabled = not ScreenGui.Enabled
-    end)
-    
-    Leaf.MenuColorValue.Changed:Connect(function()
-        for _, item in ipairs(Leaf.colorElements) do
-            if item.activeOnly then
-                if item.element == activeTab.TabButton or (item.element.Parent and item.element.Parent.Parent == activeTab.ScrollingFrame and item.element.BackgroundColor3 ~= item.defaultColor) then
-                    item.element[item.property] = Leaf.MenuColorValue.Value
-                end
-            else
-                item.element[item.property] = Leaf.MenuColorValue.Value
-            end
-        end
     end)
     
     return window
