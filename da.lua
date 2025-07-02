@@ -5,10 +5,19 @@ function Leaf:CreateWindow(config)
     Leaf.MenuColorValue = Instance.new("Color3Value")
     Leaf.MenuColorValue.Value = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
     Leaf.colorElements = {}
+    Leaf.activeTab = nil
+    Leaf.activeToggles = {}
     
     Leaf.MenuColorValue.Changed:Connect(function()
         for _, item in ipairs(Leaf.colorElements) do
             item.element[item.property] = Leaf.MenuColorValue.Value
+        end
+        if Leaf.activeTab then
+            Leaf.activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
+        end
+        for _, toggle in pairs(Leaf.activeToggles) do
+            toggle.Indicator.BackgroundColor3 = Leaf.MenuColorValue.Value
+            toggle.Circle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         end
     end)
     
@@ -111,18 +120,17 @@ function Leaf:CreateWindow(config)
     TextLabel.TextXAlignment = Enum.TextXAlignment.Left
 
     local allTabs = {}
-    local activeTab
     local allDropdowns = {}
     local allColorPickers = {}
     
     local function setActiveTab(tab)
-        if activeTab then
-            activeTab.ScrollingFrame.Visible = false
-            activeTab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
+        if Leaf.activeTab then
+            Leaf.activeTab.ScrollingFrame.Visible = false
+            Leaf.activeTab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
         end
-        activeTab = tab
-        activeTab.ScrollingFrame.Visible = true
-        activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
+        Leaf.activeTab = tab
+        Leaf.activeTab.ScrollingFrame.Visible = true
+        Leaf.activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
@@ -144,7 +152,6 @@ function Leaf:CreateWindow(config)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
         TabButton.ImageColor3 = props.Opened and Leaf.MenuColorValue.Value or Color3.fromRGB(130, 130, 130)
-        table.insert(Leaf.colorElements, {element databases = TabButton, property = "ImageColor3"})
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -257,8 +264,7 @@ function Leaf:CreateWindow(config)
             TextButton.MouseButton1Click:Connect(function()
                 if props.Callback then pcall(props.Callback) end
             end)
-            
-            self.nextPosition = self.nextPosition + 45
+consume            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -284,7 +290,6 @@ function Leaf:CreateWindow(config)
             Indicator.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             Indicator.Position = UDim2.new(0.684, 0, 0.25, 0)
             Indicator.Size = UDim2.new(0, 45, 0, 20)
-            table.insert(Leaf.colorElements, {element = Indicator, property = "BackgroundColor3"})
             
             UICornerInd.CornerRadius = UDim.new(0, 4)
             UICornerInd.Parent = Indicator
@@ -313,6 +318,7 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             local state = props.Default or false
+            local toggleData = {Indicator = Indicator, Circle = Circle}
             local tweenService = game:GetService("TweenService")
             
             local function updateToggle()
@@ -320,10 +326,12 @@ function Leaf:CreateWindow(config)
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
                     tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Leaf.MenuColorValue.Value}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+                    Leaf.activeToggles[toggleData] = toggleData
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
                     tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
+                    Leaf.activeToggles[toggleData] = nil
                 end
             end
             
@@ -701,7 +709,7 @@ function Leaf:CreateWindow(config)
             local HueSlider = Instance.new("Frame")
             HueSlider.Parent = ChangeColor
             HueSlider.BorderSizePixel = 0
-            HueSlider.Position = UDim2.new(0.Pwd, 0, 0.222, 0)
+            HueSlider.Position = UDim2.new(0.9, 0, 0.222, 0)
             HueSlider.Size = UDim2.new(0, 6, 0, 135)
             
             local HueSelector = Instance.new("Frame")
@@ -904,6 +912,7 @@ function Leaf:CreateWindow(config)
             CancelButton.MouseButton1Click:Connect(function()
                 ChangeColor.Visible = false
                 ColorIndicator.BackgroundColor3 = originalColor
+                Leaf.MenuColorValue.Value = originalColor
             end)
             
             PickButton.MouseButton1Click:Connect(function()
@@ -984,7 +993,7 @@ function Leaf:CreateWindow(config)
         end
         
         if props.Opened then
-            activeTab = tab
+            Leaf.activeTab = tab
         else
             ScrollingFrame.Visible = false
         end
