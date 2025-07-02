@@ -2,20 +2,10 @@ local Leaf = {}
 
 function Leaf:CreateWindow(config)
     local window = {}
-    window.accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
-    
-    local instancesToUpdate = {}
-    
-    local function updateAccentColor(newColor)
-        window.accentColor = newColor
-        for _, instanceData in ipairs(instancesToUpdate) do
-            if instanceData.Property then
-                instanceData.Instance[instanceData.Property] = newColor
-            elseif instanceData.Callback then
-                instanceData.Callback(newColor)
-            end
-        end
-    end
+    window.AccentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    window.BackgroundColor = Color3.fromRGB(30, 30, 30)
+    window.AccentUpdatables = {}
+    window.BackgroundUpdatables = {}
 
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
@@ -29,10 +19,11 @@ function Leaf:CreateWindow(config)
     
     MiniMenuFrame.Name = "MiniMenu"
     MiniMenuFrame.Parent = MiniMenu
-    MiniMenuFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    MiniMenuFrame.BackgroundColor3 = window.BackgroundColor
     MiniMenuFrame.BorderSizePixel = 0
     MiniMenuFrame.Position = UDim2.new(0.442, 0, 0.065, 0)
     MiniMenuFrame.Size = UDim2.new(0, 50, 0, 50)
+    table.insert(window.BackgroundUpdatables, {element = MiniMenuFrame, property = "BackgroundColor3"})
     
     UICornerMini.CornerRadius = UDim.new(0, 4)
     UICornerMini.Parent = MiniMenuFrame
@@ -43,8 +34,8 @@ function Leaf:CreateWindow(config)
     ImageMiniMenu.Position = UDim2.new(0.14, 0, 0.14, 0)
     ImageMiniMenu.Size = UDim2.new(0, 35, 0, 35)
     ImageMiniMenu.Image = "rbxassetid://"..config.LogoID
-    ImageMiniMenu.ImageColor3 = window.accentColor
-    table.insert(instancesToUpdate, {Instance = ImageMiniMenu, Property = "ImageColor3"})
+    ImageMiniMenu.ImageColor3 = window.AccentColor
+    table.insert(window.AccentUpdatables, {element = ImageMiniMenu, property = "ImageColor3"})
     
     Bmenu.Name = "Bmenu"
     Bmenu.Parent = MiniMenuFrame
@@ -77,33 +68,35 @@ function Leaf:CreateWindow(config)
     
     Mainframe.Name = "MainFrame"
     Mainframe.Parent = MenuFrame
-    Mainframe.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    Mainframe.BackgroundColor3 = window.BackgroundColor
     Mainframe.Position = UDim2.new(-0.001, 0, 0.160, 0)
     Mainframe.Size = UDim2.new(0, 200, 0, 200)
+    table.insert(window.BackgroundUpdatables, {element = Mainframe, property = "BackgroundColor3"})
     
     UICornerMain.CornerRadius = UDim.new(0, 4)
     UICornerMain.Parent = Mainframe
     
     MainframeUIStroke.Name = "MainframeUIStroke"
     MainframeUIStroke.Parent = Mainframe
-    MainframeUIStroke.Color = window.accentColor
+    MainframeUIStroke.Color = window.AccentColor
     MainframeUIStroke.Thickness = 2
-    table.insert(instancesToUpdate, {Instance = MainframeUIStroke, Property = "Color"})
+    table.insert(window.AccentUpdatables, {element = MainframeUIStroke, property = "Color"})
     
     TopBar.Name = "TopBar"
     TopBar.Parent = Mainframe
-    TopBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TopBar.BackgroundColor3 = window.BackgroundColor
     TopBar.Position = UDim2.new(0, 0, -0.2, 0)
     TopBar.Size = UDim2.new(0, 200, 0, 30)
+    table.insert(window.BackgroundUpdatables, {element = TopBar, property = "BackgroundColor3"})
     
     UICornerTop.CornerRadius = UDim.new(0, 4)
     UICornerTop.Parent = TopBar
     
     TopBarUIStroke.Name = "TopBarUIStroke"
     TopBarUIStroke.Parent = TopBar
-    TopBarUIStroke.Color = window.accentColor
+    TopBarUIStroke.Color = window.AccentColor
     TopBarUIStroke.Thickness = 2
-    table.insert(instancesToUpdate, {Instance = TopBarUIStroke, Property = "Color"})
+    table.insert(window.AccentUpdatables, {element = TopBarUIStroke, property = "Color"})
     
     TextLabel.Parent = TopBar
     TextLabel.BackgroundTransparency = 1
@@ -127,7 +120,7 @@ function Leaf:CreateWindow(config)
         end
         activeTab = tab
         activeTab.ScrollingFrame.Visible = true
-        activeTab.TabButton.ImageColor3 = window.accentColor
+        activeTab.TabButton.ImageColor3 = window.AccentColor
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
@@ -148,7 +141,7 @@ function Leaf:CreateWindow(config)
         TabButton.Position = UDim2.new(0.64 + (#allTabs * 0.11), 0, 0.04, 0)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
-        TabButton.ImageColor3 = props.Opened and window.accentColor or Color3.fromRGB(130, 130, 130)
+        TabButton.ImageColor3 = props.Opened and window.AccentColor or Color3.fromRGB(130, 130, 130)
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -212,7 +205,7 @@ function Leaf:CreateWindow(config)
                 clickCount += 1
                 local currentClick = clickCount
                 
-                Indicator.BackgroundColor3 = window.accentColor
+                Indicator.BackgroundColor3 = window.AccentColor
                 
                 if props.Callback then pcall(props.Callback) end
                 
@@ -237,10 +230,9 @@ function Leaf:CreateWindow(config)
             local TextButton = Instance.new("TextButton")
             
             DeButtonFrame.Parent = self.ScrollingFrame
-            DeButtonFrame.BackgroundColor3 = window.accentColor
+            DeButtonFrame.BackgroundColor3 = window.AccentColor
             DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
-            table.insert(instancesToUpdate, {Instance = DeButtonFrame, Property = "BackgroundColor3"})
             
             UICornerDeBtn.CornerRadius = UDim.new(0, 4)
             UICornerDeBtn.Parent = DeButtonFrame
@@ -321,7 +313,7 @@ function Leaf:CreateWindow(config)
             local function updateToggle()
                 if state then
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
-                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = window.accentColor}):Play()
+                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = window.AccentColor}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
@@ -337,14 +329,6 @@ function Leaf:CreateWindow(config)
                 updateToggle()
                 if props.Callback then pcall(props.Callback, state) end
             end)
-            
-            table.insert(instancesToUpdate, {
-                Callback = function(newColor)
-                    if state then
-                        Indicator.BackgroundColor3 = newColor
-                    end
-                end
-            })
             
             self.nextPosition += 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -392,9 +376,9 @@ function Leaf:CreateWindow(config)
             UICornerFill.Parent = Fill
             
             Progress.Parent = Fill
-            Progress.BackgroundColor3 = window.accentColor
+            Progress.BackgroundColor3 = window.AccentColor
             Progress.Size = UDim2.new(0, 0, 1, 0)
-            table.insert(instancesToUpdate, {Instance = Progress, Property = "BackgroundColor3"})
+            table.insert(window.AccentUpdatables, {element = Progress, property = "BackgroundColor3"})
             
             UICornerProg.CornerRadius = UDim.new(0, 4)
             UICornerProg.Parent = Progress
@@ -483,10 +467,10 @@ function Leaf:CreateWindow(config)
             SectionTitle.TextSize = 16
             
             Underline.Parent = SectionFrame
-            Underline.BackgroundColor3 = window.accentColor
+            Underline.BackgroundColor3 = window.AccentColor
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
-            table.insert(instancesToUpdate, {Instance = Underline, Property = "BackgroundColor3"})
+            table.insert(window.AccentUpdatables, {element = Underline, property = "BackgroundColor3"})
             
             self.nextPosition += 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -528,14 +512,14 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             Info.Parent = DropdownFrame
-            Info.BackgroundColor3 = window.accentColor
+            Info.BackgroundColor3 = window.AccentColor
             Info.Position = UDim2.new(0.7, 0, 0.2, 0)
             Info.Size = UDim2.new(0.25, 0, 0.6, 0)
             Info.Font = Enum.Font.GothamBold
             Info.Text = props.CurrentOption
             Info.TextColor3 = Color3.fromRGB(255, 255, 255)
             Info.TextSize = 14
-            table.insert(instancesToUpdate, {Instance = Info, Property = "BackgroundColor3"})
+            table.insert(window.AccentUpdatables, {element = Info, property = "BackgroundColor3"})
             
             UICornerInfo.CornerRadius = UDim.new(0, 4)
             UICornerInfo.Parent = Info
@@ -580,7 +564,7 @@ function Leaf:CreateWindow(config)
                 OptionText.Size = UDim2.new(1, 0, 1, 0)
                 OptionText.Font = Enum.Font.GothamBold
                 OptionText.Text = option
-                OptionText.TextColor3 = window.accentColor
+                OptionText.TextColor3 = window.AccentColor
                 OptionText.TextSize = 14
                 OptionText.ZIndex = 2
                 
@@ -698,12 +682,59 @@ function Leaf:CreateWindow(config)
             local UIStroke = Instance.new("UIStroke")
             UIStroke.Parent = ChangeColor
             UIStroke.Thickness = 2
-            UIStroke.Color = window.accentColor
-            table.insert(instancesToUpdate, {Instance = UIStroke, Property = "Color"})
+            UIStroke.Color = window.AccentColor
+            table.insert(window.AccentUpdatables, {element = UIStroke, property = "Color"})
+            
+            local ColorCanvas = Instance.new("Frame")
+            ColorCanvas.Parent = ChangeColor
+            ColorCanvas.BackgroundTransparency = 1
+            ColorCanvas.BorderSizePixel = 0
+            ColorCanvas.Position = UDim2.new(0.041, 0, 0.222, 0)
+            ColorCanvas.Size = UDim2.new(0, 125, 0, 100)
+            
+            local HueSlider = Instance.new("Frame")
+            HueSlider.Parent = ChangeColor
+            HueSlider.BorderSizePixel = 0
+            HueSlider.Position = UDim2.new(0.9, 0, 0.222, 0)
+            HueSlider.Size = UDim2.new(0, 6, 0, 135)
+            
+            local HueSelector = Instance.new("Frame")
+            HueSelector.Parent = HueSlider
+            HueSelector.AnchorPoint = Vector2.new(0.5, 0.5)
+            HueSelector.BorderSizePixel = 0
+            HueSelector.Size = UDim2.new(0, 15, 0, 15)
+            HueSelector.BackgroundColor3 = Color3.new(1, 1, 1)
+            HueSelector.ZIndex = 10
+            
+            local UICornerHue = Instance.new("UICorner")
+            UICornerHue.CornerRadius = UDim.new(1, 0)
+            UICornerHue.Parent = HueSelector
+            
+            local UIStrokeHue = Instance.new("UIStroke")
+            UIStrokeHue.Parent = HueSelector
+            UIStrokeHue.Thickness = 1
+            UIStrokeHue.Color = Color3.new(1, 1, 1)
+            
+            local ColorSelector = Instance.new("Frame")
+            ColorSelector.Parent = ColorCanvas
+            ColorSelector.AnchorPoint = Vector2.new(0.5, 0.5)
+            ColorSelector.BorderSizePixel = 0
+            ColorSelector.Size = UDim2.new(0, 15, 0, 15)
+            ColorSelector.BackgroundTransparency = 1
+            ColorSelector.ZIndex = 10
+            
+            local UICornerSel = Instance.new("UICorner")
+            UICornerSel.CornerRadius = UDim.new(1, 0)
+            UICornerSel.Parent = ColorSelector
+            
+            local UIStrokeSel = Instance.new("UIStroke")
+            UIStrokeSel.Parent = ColorSelector
+            UIStrokeSel.Thickness = 2
+            UIStrokeSel.Color = Color3.new(1, 1, 1)
             
             local ApplyButton = Instance.new("TextButton")
             ApplyButton.Parent = ChangeColor
-            ApplyButton.BackgroundColor3 = window.accentColor
+            ApplyButton.BackgroundColor3 = window.AccentColor
             ApplyButton.Position = UDim2.new(0.449, 0, 0.805, 0)
             ApplyButton.Size = UDim2.new(0, 60, 0, 27)
             ApplyButton.Font = Enum.Font.GothamBold
@@ -711,11 +742,162 @@ function Leaf:CreateWindow(config)
             ApplyButton.TextColor3 = Color3.new(1, 1, 1)
             ApplyButton.TextSize = 14
             ApplyButton.ZIndex = 5
-            table.insert(instancesToUpdate, {Instance = ApplyButton, Property = "BackgroundColor3"})
+            table.insert(window.AccentUpdatables, {element = ApplyButton, property = "BackgroundColor3"})
             
             local UICornerApply = Instance.new("UICorner")
             UICornerApply.CornerRadius = UDim.new(0, 4)
             UICornerApply.Parent = ApplyButton
+            
+            local CancelButton = Instance.new("TextButton")
+            CancelButton.Parent = ChangeColor
+            CancelButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            CancelButton.Position = UDim2.new(0.041, 0, 0.805, 0)
+            CancelButton.Size = UDim2.new(0, 60, 0, 27)
+            CancelButton.Font = Enum.Font.GothamBold
+            CancelButton.Text = "Cancel"
+            CancelButton.TextColor3 = Color3.new(1, 1, 1)
+            CancelButton.TextSize = 14
+            CancelButton.ZIndex = 5
+            
+            local UICornerCancel = Instance.new("UICorner")
+            UICornerCancel.CornerRadius = UDim.new(0, 4)
+            UICornerCancel.Parent = CancelButton
+            
+            local MainGradient = Instance.new("UIGradient")
+            MainGradient.Rotation = 0
+            MainGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1))
+            }
+            
+            local ValueGradient = Instance.new("UIGradient")
+            ValueGradient.Transparency = NumberSequence.new{
+                NumberSequenceKeypoint.new(0, 1),
+                NumberSequenceKeypoint.new(1, 0)
+            }
+            ValueGradient.Rotation = 90
+            
+            local HueGradient = Instance.new("UIGradient")
+            HueGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
+                ColorSequenceKeypoint.new(0.17, Color3.fromHSV(0.83, 1, 1)),
+                ColorSequenceKeypoint.new(0.33, Color3.fromHSV(0.67, 1, 1)),
+                ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+                ColorSequenceKeypoint.new(0.67, Color3.fromHSV(0.33, 1, 1)),
+                ColorSequenceKeypoint.new(0.83, Color3.fromHSV(0.17, 1, 1)),
+                ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1))
+            }
+            HueGradient.Rotation = 90
+            
+            local MainGradientFrame = Instance.new("Frame")
+            MainGradientFrame.Size = UDim2.new(1, 0, 1, 0)
+            MainGradientFrame.BackgroundTransparency = 0
+            MainGradientFrame.Parent = ColorCanvas
+            MainGradient.Parent = MainGradientFrame
+            
+            local ValueGradientFrame = Instance.new("Frame")
+            ValueGradientFrame.Size = UDim2.new(1, 0, 1, 0)
+            ValueGradientFrame.BackgroundTransparency = 0
+            ValueGradientFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+            ValueGradientFrame.Parent = ColorCanvas
+            ValueGradient.Parent = ValueGradientFrame
+            
+            HueGradient.Parent = HueSlider
+            
+            local currentHue, currentSat, currentVal = 0, 1, 1
+            local originalColor = Color
+            local draggingHue = false
+            local draggingColor = false
+            local draggingCP = false
+            local dragStartCP, startPosCP
+            
+            local function updateColor()
+                local newColor = Color3.fromHSV(currentHue, currentSat, currentVal)
+                ColorIndicator.BackgroundColor3 = newColor
+            end
+            
+            local function updateHueSelector(input)
+                local y = (input.Position.Y - HueSlider.AbsolutePosition.Y) / HueSlider.AbsoluteSize.Y
+                y = math.clamp(y, 0, 1)
+                currentHue = 1 - y
+                HueSelector.Position = UDim2.new(0.5, 0, y, 0)
+                HueSelector.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
+                MainGradient.Color = ColorSequence.new{
+                    ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                    ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, 1, 1))
+                }
+                updateColor()
+            end
+            
+            local function updateColorSelector(input)
+                local x = (input.Position.X - ColorCanvas.AbsolutePosition.X) / ColorCanvas.AbsoluteSize.X
+                local y = (input.Position.Y - ColorCanvas.AbsolutePosition.Y) / ColorCanvas.AbsoluteSize.Y
+                x = math.clamp(x, 0, 1)
+                y = math.clamp(y, 0, 1)
+                currentSat = x
+                currentVal = 1 - y
+                ColorSelector.Position = UDim2.new(x, 0, y, 0)
+                updateColor()
+            end
+            
+            HueSlider.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    draggingHue = true
+                    updateHueSelector(input)
+                end
+            end)
+            
+            ColorCanvas.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    draggingColor = true
+                    updateColorSelector(input)
+                end
+            end)
+            
+            TopBarCP.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    draggingCP = true
+                    dragStartCP = input.Position
+                    startPosCP = ChangeColor.Position
+                end
+            end)
+            
+            game:GetService("UserInputService").InputChanged:Connect(function(input)
+                if draggingHue and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    updateHueSelector(input)
+                elseif draggingColor and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    updateColorSelector(input)
+                elseif draggingCP and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    local delta = input.Position - dragStartCP
+                    ChangeColor.Position = UDim2.new(
+                        startPosCP.X.Scale,
+                        startPosCP.X.Offset + delta.X,
+                        startPosCP.Y.Scale,
+                        startPosCP.Y.Offset + delta.Y
+                    )
+                end
+            end)
+            
+            game:GetService("UserInputService").InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    draggingHue = false
+                    draggingColor = false
+                    draggingCP = false
+                end
+            end)
+            
+            ApplyButton.MouseButton1Click:Connect(function()
+                ChangeColor.Visible = false
+                Color = ColorIndicator.BackgroundColor3
+                if Callback then
+                    Callback(Color)
+                end
+            end)
+            
+            CancelButton.MouseButton1Click:Connect(function()
+                ChangeColor.Visible = false
+                ColorIndicator.BackgroundColor3 = originalColor
+            end)
             
             PickButton.MouseButton1Click:Connect(function()
                 for _, picker in ipairs(allColorPickers) do
@@ -723,8 +905,20 @@ function Leaf:CreateWindow(config)
                 end
                 ChangeColor.Visible = not ChangeColor.Visible
                 if ChangeColor.Visible then
+                    originalColor = ColorIndicator.BackgroundColor3
                     local absPos = ColorPickerFrame.AbsolutePosition
                     ChangeColor.Position = UDim2.new(0, absPos.X, 0, absPos.Y + 45)
+                    
+                    currentHue, currentSat, currentVal = Color3.toHSV(originalColor)
+                    
+                    HueSelector.Position = UDim2.new(0.5, 0, 1 - currentHue, 0)
+                    HueSelector.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
+                    ColorSelector.Position = UDim2.new(currentSat, 0, 1 - currentVal, 0)
+                    
+                    MainGradient.Color = ColorSequence.new{
+                        ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
+                        ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, 1, 1))
+                    }
                 end
             end)
             
@@ -793,8 +987,21 @@ function Leaf:CreateWindow(config)
         return tab
     end
 
-    function window:UpdateAccentColor(newColor)
-        updateAccentColor(newColor)
+    function window:SetAccentColor(color)
+        self.AccentColor = color
+        for _, item in ipairs(self.AccentUpdatables) do
+            item.element[item.property] = color
+        end
+        if activeTab then
+            activeTab.TabButton.ImageColor3 = color
+        end
+    end
+
+    function window:SetBackgroundColor(color)
+        self.BackgroundColor = color
+        for _, item in ipairs(self.BackgroundUpdatables) do
+            item.element[item.property] = color
+        end
     end
 
     local UserInputService = game:GetService("UserInputService")
