@@ -1,3 +1,14 @@
+1.Сделать что бы color picker изменял цвет сразу у вкладок и кнопок toggle.
+2.Написать полным кодом , без комментариев в коде.
+Вот код color picker:
+MiscTab:CreateColorPicker({
+    Name = "Menu Color",
+    Color = Leaf.MenuColorValue.Value,
+    Callback = function(color)
+        Leaf.MenuColorValue.Value = color
+    end
+})
+Вот код меню:
 local Leaf = {}
 
 function Leaf:CreateWindow(config)
