@@ -104,6 +104,19 @@ function Leaf:CreateWindow(config)
     local allDropdowns = {}
     local allColorPickers = {}
     
+    local function updateAccentColor(newColor)
+        accentColor = newColor
+        MainframeUIStroke.Color = newColor
+        TopBarUIStroke.Color = newColor
+        ImageMiniMenu.ImageColor3 = newColor
+        
+        for _, tab in ipairs(allTabs) do
+            if activeTab == tab then
+                tab.TabButton.ImageColor3 = newColor
+            end
+        end
+    end
+    
     local function setActiveTab(tab)
         if activeTab then
             activeTab.ScrollingFrame.Visible = false
@@ -878,6 +891,7 @@ function Leaf:CreateWindow(config)
                 if Callback then
                     Callback(Color)
                 end
+                updateAccentColor(Color)
             end)
             
             CancelButton.MouseButton1Click:Connect(function()
