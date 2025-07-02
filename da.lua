@@ -3,7 +3,6 @@ local Leaf = {}
 function Leaf:CreateWindow(config)
     local window = {}
     local accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
-    window.accentElements = {}
     
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
@@ -104,25 +103,6 @@ function Leaf:CreateWindow(config)
     local activeTab
     local allDropdowns = {}
     local allColorPickers = {}
-    
-    local function updateAccentColor(newColor)
-        accentColor = newColor
-        MainframeUIStroke.Color = newColor
-        TopBarUIStroke.Color = newColor
-        ImageMiniMenu.ImageColor3 = newColor
-        
-        for _, tab in ipairs(allTabs) do
-            if activeTab == tab then
-                tab.TabButton.ImageColor3 = newColor
-            end
-        end
-        
-        for _, element in ipairs(window.accentElements) do
-            if element.updateColor then
-                element.updateColor(newColor)
-            end
-        end
-    end
     
     local function setActiveTab(tab)
         if activeTab then
@@ -265,13 +245,6 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback) end
             end)
             
-            local deButtonElement = {
-                updateColor = function(color)
-                    DeButtonFrame.BackgroundColor3 = color
-                end
-            }
-            table.insert(window.accentElements, deButtonElement)
-            
             self.nextPosition += 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
@@ -341,15 +314,6 @@ function Leaf:CreateWindow(config)
             end
             
             updateToggle()
-            
-            local toggleElement = {
-                updateColor = function(color)
-                    if state then
-                        Indicator.BackgroundColor3 = color
-                    end
-                end
-            }
-            table.insert(window.accentElements, toggleElement)
             
             TextButton.MouseButton1Click:Connect(function()
                 state = not state
@@ -465,13 +429,6 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
-            local sliderElement = {
-                updateColor = function(color)
-                    Progress.BackgroundColor3 = color
-                end
-            }
-            table.insert(window.accentElements, sliderElement)
-            
             updateSlider(default)
             self.nextPosition += 55
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -503,13 +460,6 @@ function Leaf:CreateWindow(config)
             Underline.BackgroundColor3 = accentColor
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
-            
-            local sectionElement = {
-                updateColor = function(color)
-                    Underline.BackgroundColor3 = color
-                end
-            }
-            table.insert(window.accentElements, sectionElement)
             
             self.nextPosition += 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -627,13 +577,6 @@ function Leaf:CreateWindow(config)
             
             local isOpen = false
             
-            local dropdownElement = {
-                updateColor = function(color)
-                    Info.BackgroundColor3 = color
-                end
-            }
-            table.insert(window.accentElements, dropdownElement)
-            
             TextButton.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
                 if isOpen then
@@ -655,8 +598,8 @@ function Leaf:CreateWindow(config)
         end
         
         function tab:CreateColorPicker(props)
-            local Name = props.Name
-            local Color = props.Color
+            local initialColorTable = props.Color
+            local initialColor = Color3.fromRGB(initialColorTable[1], initialColorTable[2], initialColorTable[3])
             local Callback = props.Callback
             
             local ColorPickerFrame = Instance.new("Frame")
@@ -679,13 +622,13 @@ function Leaf:CreateWindow(config)
             NameLabel.Position = UDim2.new(0.04, 0, 0, 0)
             NameLabel.Size = UDim2.new(0.6, 0, 1, 0)
             NameLabel.Font = Enum.Font.GothamBold
-            NameLabel.Text = Name
+            NameLabel.Text = props.Name
             NameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
             NameLabel.TextSize = 16
             NameLabel.TextXAlignment = Enum.TextXAlignment.Left
             
             ColorIndicator.Parent = ColorPickerFrame
-            ColorIndicator.BackgroundColor3 = Color
+            ColorIndicator.BackgroundColor3 = initialColor
             ColorIndicator.Position = UDim2.new(0.8, 0, 0.18, 0)
             ColorIndicator.Size = UDim2.new(0, 25, 0, 25)
             
@@ -848,7 +791,7 @@ function Leaf:CreateWindow(config)
             HueGradient.Parent = HueSlider
             
             local currentHue, currentSat, currentVal = 0, 1, 1
-            local originalColor = Color
+            local originalColor = initialColor
             local draggingHue = false
             local draggingColor = false
             local draggingCP = false
@@ -931,11 +874,14 @@ function Leaf:CreateWindow(config)
             
             ApplyButton.MouseButton1Click:Connect(function()
                 ChangeColor.Visible = false
-                Color = ColorIndicator.BackgroundColor3
+                local currentColor = ColorIndicator.BackgroundColor3
+                local r = math.floor(currentColor.r * 255 + 0.5)
+                local g = math.floor(currentColor.g * 255 + 0.5)
+                local b = math.floor(currentColor.b * 255 + 0.5)
+                local colorTable = {r, g, b}
                 if Callback then
-                    Callback(Color)
+                    Callback(colorTable)
                 end
-                updateAccentColor(Color)
             end)
             
             CancelButton.MouseButton1Click:Connect(function()
@@ -952,27 +898,16 @@ function Leaf:CreateWindow(config)
                     originalColor = ColorIndicator.BackgroundColor3
                     local absPos = ColorPickerFrame.AbsolutePosition
                     ChangeColor.Position = UDim2.new(0, absPos.X, 0, absPos.Y + 45)
-                    
                     currentHue, currentSat, currentVal = Color3.toHSV(originalColor)
-                    
                     HueSelector.Position = UDim2.new(0.5, 0, 1 - currentHue, 0)
                     HueSelector.BackgroundColor3 = Color3.fromHSV(currentHue, 1, 1)
                     ColorSelector.Position = UDim2.new(currentSat, 0, 1 - currentVal, 0)
-                    
                     MainGradient.Color = ColorSequence.new{
                         ColorSequenceKeypoint.new(0, Color3.new(1, 1, 1)),
                         ColorSequenceKeypoint.new(1, Color3.fromHSV(currentHue, 1, 1))
                     }
                 end
             end)
-            
-            local colorPickerElement = {
-                updateColor = function(color)
-                    UIStroke.Color = color
-                    ApplyButton.BackgroundColor3 = color
-                end
-            }
-            table.insert(window.accentElements, colorPickerElement)
             
             table.insert(allColorPickers, ChangeColor)
             self.nextPosition += 45
