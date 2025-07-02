@@ -1,12 +1,10 @@
 local Leaf = {}
+Leaf.MenuColor = Color3.fromRGB(182, 255, 128)
 
 function Leaf:CreateWindow(config)
     local window = {}
-    window.AccentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
-    window.BackgroundColor = Color3.fromRGB(30, 30, 30)
-    window.AccentUpdatables = {}
-    window.BackgroundUpdatables = {}
-
+    local accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
     local UICornerMini = Instance.new("UICorner")
@@ -19,11 +17,10 @@ function Leaf:CreateWindow(config)
     
     MiniMenuFrame.Name = "MiniMenu"
     MiniMenuFrame.Parent = MiniMenu
-    MiniMenuFrame.BackgroundColor3 = window.BackgroundColor
+    MiniMenuFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     MiniMenuFrame.BorderSizePixel = 0
     MiniMenuFrame.Position = UDim2.new(0.442, 0, 0.065, 0)
     MiniMenuFrame.Size = UDim2.new(0, 50, 0, 50)
-    table.insert(window.BackgroundUpdatables, {element = MiniMenuFrame, property = "BackgroundColor3"})
     
     UICornerMini.CornerRadius = UDim.new(0, 4)
     UICornerMini.Parent = MiniMenuFrame
@@ -34,8 +31,7 @@ function Leaf:CreateWindow(config)
     ImageMiniMenu.Position = UDim2.new(0.14, 0, 0.14, 0)
     ImageMiniMenu.Size = UDim2.new(0, 35, 0, 35)
     ImageMiniMenu.Image = "rbxassetid://"..config.LogoID
-    ImageMiniMenu.ImageColor3 = window.AccentColor
-    table.insert(window.AccentUpdatables, {element = ImageMiniMenu, property = "ImageColor3"})
+    ImageMiniMenu.ImageColor3 = Leaf.MenuColor
     
     Bmenu.Name = "Bmenu"
     Bmenu.Parent = MiniMenuFrame
@@ -68,35 +64,31 @@ function Leaf:CreateWindow(config)
     
     Mainframe.Name = "MainFrame"
     Mainframe.Parent = MenuFrame
-    Mainframe.BackgroundColor3 = window.BackgroundColor
+    Mainframe.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Mainframe.Position = UDim2.new(-0.001, 0, 0.160, 0)
     Mainframe.Size = UDim2.new(0, 200, 0, 200)
-    table.insert(window.BackgroundUpdatables, {element = Mainframe, property = "BackgroundColor3"})
     
     UICornerMain.CornerRadius = UDim.new(0, 4)
     UICornerMain.Parent = Mainframe
     
     MainframeUIStroke.Name = "MainframeUIStroke"
     MainframeUIStroke.Parent = Mainframe
-    MainframeUIStroke.Color = window.AccentColor
+    MainframeUIStroke.Color = Leaf.MenuColor
     MainframeUIStroke.Thickness = 2
-    table.insert(window.AccentUpdatables, {element = MainframeUIStroke, property = "Color"})
     
     TopBar.Name = "TopBar"
     TopBar.Parent = Mainframe
-    TopBar.BackgroundColor3 = window.BackgroundColor
+    TopBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     TopBar.Position = UDim2.new(0, 0, -0.2, 0)
     TopBar.Size = UDim2.new(0, 200, 0, 30)
-    table.insert(window.BackgroundUpdatables, {element = TopBar, property = "BackgroundColor3"})
     
     UICornerTop.CornerRadius = UDim.new(0, 4)
     UICornerTop.Parent = TopBar
     
     TopBarUIStroke.Name = "TopBarUIStroke"
     TopBarUIStroke.Parent = TopBar
-    TopBarUIStroke.Color = window.AccentColor
+    TopBarUIStroke.Color = Leaf.MenuColor
     TopBarUIStroke.Thickness = 2
-    table.insert(window.AccentUpdatables, {element = TopBarUIStroke, property = "Color"})
     
     TextLabel.Parent = TopBar
     TextLabel.BackgroundTransparency = 1
@@ -120,13 +112,38 @@ function Leaf:CreateWindow(config)
         end
         activeTab = tab
         activeTab.ScrollingFrame.Visible = true
-        activeTab.TabButton.ImageColor3 = window.AccentColor
+        activeTab.TabButton.ImageColor3 = Leaf.MenuColor
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
         end
         for _, picker in ipairs(allColorPickers) do
             picker.Visible = false
+        end
+    end
+    
+    function Leaf:SetMenuColor(color)
+        Leaf.MenuColor = color
+        ImageMiniMenu.ImageColor3 = color
+        MainframeUIStroke.Color = color
+        TopBarUIStroke.Color = color
+        if activeTab then
+            activeTab.TabButton.ImageColor3 = color
+        end
+        for _, tab in ipairs(allTabs) do
+            if tab.ScrollingFrame then
+                for _, child in ipairs(tab.ScrollingFrame:GetChildren()) do
+                    if child:IsA("Frame") then
+                        for _, subChild in ipairs(child:GetChildren()) do
+                            if subChild.Name == "Indicator" or subChild.Name == "Progress" or subChild.Name == "Underline" then
+                                subChild.BackgroundColor3 = color
+                            elseif subChild.Name == "Info" then
+                                subChild.BackgroundColor3 = color
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
     
@@ -141,7 +158,7 @@ function Leaf:CreateWindow(config)
         TabButton.Position = UDim2.new(0.64 + (#allTabs * 0.11), 0, 0.04, 0)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
-        TabButton.ImageColor3 = props.Opened and window.AccentColor or Color3.fromRGB(130, 130, 130)
+        TabButton.ImageColor3 = props.Opened and Leaf.MenuColor or Color3.fromRGB(130, 130, 130)
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -205,10 +222,9 @@ function Leaf:CreateWindow(config)
                 clickCount += 1
                 local currentClick = clickCount
                 
-                Indicator.BackgroundColor3 = window.AccentColor
+                Indicator.BackgroundColor3 = Leaf.MenuColor
                 
-                if props.Callback then pcall(props.Callback) end
-                
+                if props.Callback then pcall(props.Callback →
                 local startTime = os.clock()
                 while os.clock() - startTime < (props.Active or 0.5) do
                     runService.Heartbeat:Wait()
@@ -230,7 +246,10 @@ function Leaf:CreateWindow(config)
             local TextButton = Instance.new("TextButton")
             
             DeButtonFrame.Parent = self.ScrollingFrame
-            DeButtonFrame.BackgroundColor3 = window.AccentColor
+            DeButtonFrame.BackgroundColor3 = Leaf.MenuColor
+            DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
+            DeButtonFrame.Position = UDim2.new(0(namespace) 0, 0)
+            DeButtonFrame.BackgroundColor3 = Leaf.MenuColor
             DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
             
@@ -242,6 +261,8 @@ function Leaf:CreateWindow(config)
             NameButton.Size = UDim2.new(1, 0, 1, 0)
             NameButton.Font = Enum.Font.GothamBold
             NameButton.Text = props.Title
+
+
             NameButton.TextColor3 = Color3.fromRGB(255, 255, 255)
             NameButton.TextSize = 25
             
@@ -313,7 +334,7 @@ function Leaf:CreateWindow(config)
             local function updateToggle()
                 if state then
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
-                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = window.AccentColor}):Play()
+                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Leaf.MenuColor}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
@@ -376,9 +397,8 @@ function Leaf:CreateWindow(config)
             UICornerFill.Parent = Fill
             
             Progress.Parent = Fill
-            Progress.BackgroundColor3 = window.AccentColor
+            Progress.BackgroundColor3 = Leaf.MenuColor
             Progress.Size = UDim2.new(0, 0, 1, 0)
-            table.insert(window.AccentUpdatables, {element = Progress, property = "BackgroundColor3"})
             
             UICornerProg.CornerRadius = UDim.new(0, 4)
             UICornerProg.Parent = Progress
@@ -467,10 +487,9 @@ function Leaf:CreateWindow(config)
             SectionTitle.TextSize = 16
             
             Underline.Parent = SectionFrame
-            Underline.BackgroundColor3 = window.AccentColor
+            Underline.BackgroundColor3 = Leaf.MenuColor
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
-            table.insert(window.AccentUpdatables, {element = Underline, property = "BackgroundColor3"})
             
             self.nextPosition += 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -512,14 +531,13 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             Info.Parent = DropdownFrame
-            Info.BackgroundColor3 = window.AccentColor
+            Info.BackgroundColor3 = Leaf.MenuColor
             Info.Position = UDim2.new(0.7, 0, 0.2, 0)
             Info.Size = UDim2.new(0.25, 0, 0.6, 0)
             Info.Font = Enum.Font.GothamBold
             Info.Text = props.CurrentOption
             Info.TextColor3 = Color3.fromRGB(255, 255, 255)
             Info.TextSize = 14
-            table.insert(window.AccentUpdatables, {element = Info, property = "BackgroundColor3"})
             
             UICornerInfo.CornerRadius = UDim.new(0, 4)
             UICornerInfo.Parent = Info
@@ -564,7 +582,7 @@ function Leaf:CreateWindow(config)
                 OptionText.Size = UDim2.new(1, 0, 1, 0)
                 OptionText.Font = Enum.Font.GothamBold
                 OptionText.Text = option
-                OptionText.TextColor3 = window.AccentColor
+                OptionText.TextColor3 = Leaf.MenuColor
                 OptionText.TextSize = 14
                 OptionText.ZIndex = 2
                 
@@ -682,8 +700,7 @@ function Leaf:CreateWindow(config)
             local UIStroke = Instance.new("UIStroke")
             UIStroke.Parent = ChangeColor
             UIStroke.Thickness = 2
-            UIStroke.Color = window.AccentColor
-            table.insert(window.AccentUpdatables, {element = UIStroke, property = "Color"})
+            UIStroke.Color = Leaf.MenuColor
             
             local ColorCanvas = Instance.new("Frame")
             ColorCanvas.Parent = ChangeColor
@@ -734,7 +751,7 @@ function Leaf:CreateWindow(config)
             
             local ApplyButton = Instance.new("TextButton")
             ApplyButton.Parent = ChangeColor
-            ApplyButton.BackgroundColor3 = window.AccentColor
+            ApplyButton.BackgroundColor3 = Leaf.MenuColor
             ApplyButton.Position = UDim2.new(0.449, 0, 0.805, 0)
             ApplyButton.Size = UDim2.new(0, 60, 0, 27)
             ApplyButton.Font = Enum.Font.GothamBold
@@ -742,7 +759,6 @@ function Leaf:CreateWindow(config)
             ApplyButton.TextColor3 = Color3.new(1, 1, 1)
             ApplyButton.TextSize = 14
             ApplyButton.ZIndex = 5
-            table.insert(window.AccentUpdatables, {element = ApplyButton, property = "BackgroundColor3"})
             
             local UICornerApply = Instance.new("UICorner")
             UICornerApply.CornerRadius = UDim.new(0, 4)
@@ -985,23 +1001,6 @@ function Leaf:CreateWindow(config)
         TabButton.MouseButton1Click:Connect(function() setActiveTab(tab) end)
         table.insert(allTabs, tab)
         return tab
-    end
-
-    function window:SetAccentColor(color)
-        self.AccentColor = color
-        for _, item in ipairs(self.AccentUpdatables) do
-            item.element[item.property] = color
-        end
-        if activeTab then
-            activeTab.TabButton.ImageColor3 = color
-        end
-    end
-
-    function window:SetBackgroundColor(color)
-        self.BackgroundColor = color
-        for _, item in ipairs(self.BackgroundUpdatables) do
-            item.element[item.property] = color
-        end
     end
 
     local UserInputService = game:GetService("UserInputService")
