@@ -1,21 +1,16 @@
 local Leaf = {}
 
-Leaf.MenuColor = Color3.fromRGB(182, 255, 128)
-
-function Leaf:SetMenuColor(color)
-    Leaf.MenuColor = color
-    -- Update all elements with the new color
-    for _, window in ipairs(Leaf.Windows or {}) do
-        window.UpdateMenuColor(color)
-    end
-end
-
 function Leaf:CreateWindow(config)
     local window = {}
-    local accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    Leaf.MenuColorValue = Instance.new("Color3Value")
+    Leaf.MenuColorValue.Value = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    Leaf.colorElements = {}
     
-    Leaf.Windows = Leaf.Windows or {}
-    table.insert(Leaf.Windows, window)
+    Leaf.MenuColorValue.Changed:Connect(function()
+        for _, item in ipairs(Leaf.colorElements) do
+            item.element[item.property] = Leaf.MenuColorValue.Value
+        end
+    end)
     
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
@@ -43,7 +38,8 @@ function Leaf:CreateWindow(config)
     ImageMiniMenu.Position = UDim2.new(0.14, 0, 0.14, 0)
     ImageMiniMenu.Size = UDim2.new(0, 35, 0, 35)
     ImageMiniMenu.Image = "rbxassetid://"..config.LogoID
-    ImageMiniMenu.ImageColor3 = accentColor
+    ImageMiniMenu.ImageColor3 = Leaf.MenuColorValue.Value
+    table.insert(Leaf.colorElements, {element = ImageMiniMenu, property = "ImageColor3"})
     
     Bmenu.Name = "Bmenu"
     Bmenu.Parent = MiniMenuFrame
@@ -85,8 +81,9 @@ function Leaf:CreateWindow(config)
     
     MainframeUIStroke.Name = "MainframeUIStroke"
     MainframeUIStroke.Parent = Mainframe
-    MainframeUIStroke.Color = accentColor
+    MainframeUIStroke.Color = Leaf.MenuColorValue.Value
     MainframeUIStroke.Thickness = 2
+    table.insert(Leaf.colorElements, {element = MainframeUIStroke, property = "Color"})
     
     TopBar.Name = "TopBar"
     TopBar.Parent = Mainframe
@@ -99,8 +96,9 @@ function Leaf:CreateWindow(config)
     
     TopBarUIStroke.Name = "TopBarUIStroke"
     TopBarUIStroke.Parent = TopBar
-    TopBarUIStroke.Color = accentColor
+    TopBarUIStroke.Color = Leaf.MenuColorValue.Value
     TopBarUIStroke.Thickness = 2
+    table.insert(Leaf.colorElements, {element = TopBarUIStroke, property = "Color"})
     
     TextLabel.Parent = TopBar
     TextLabel.BackgroundTransparency = 1
@@ -117,60 +115,6 @@ function Leaf:CreateWindow(config)
     local allDropdowns = {}
     local allColorPickers = {}
     
-    function window.UpdateMenuColor(color)
-        accentColor = color
-        ImageMiniMenu.ImageColor3 = color
-        MainframeUIStroke.Color = color
-        TopBarUIStroke.Color = color
-        
-        if activeTab then
-            activeTab.TabButton.ImageColor3 = color
-        end
-        
-        for _, tab in ipairs(allTabs) do
-            for _, element in ipairs(tab.ScrollingFrame:GetChildren()) do
-                if element:IsA("Frame") then
-                    if element.Name == "DeButtonFrame" then
-                        element.BackgroundColor3 = color
-                    elseif element:FindFirstChild("Indicator") then
-                        if element.Indicator:FindFirstChild("BackgroundColor3") and element.Indicator.BackgroundColor3 == Color3.fromRGB(182, 255, 128) then
-                            element.Indicator.BackgroundColor3 = color
-                        end
-                    end
-                    
-                    if element:FindFirstChild("Progress") then
-                        element.Progress.BackgroundColor3 = color
-                    end
-                    
-                    if element:FindFirstChild("Underline") then
-                        element.Underline.BackgroundColor3 = color
-                    end
-                    
-                    if element:FindFirstChild("Info") then
-                        element.Info.BackgroundColor3 = color
-                    end
-                    
-                    if element:FindFirstChild("Circle") and element.Circle.BackgroundColor3 == Color3.fromRGB(182, 255, 128) then
-                        element.Circle.BackgroundColor3 = color
-                    end
-                    
-                    if element:FindFirstChild("Indicator") and element.Indicator:FindFirstChild("BackgroundColor3") and element.Indicator.BackgroundColor3 == Color3.fromRGB(182, 255, 128) then
-                        element.Indicator.BackgroundColor3 = color
-                    end
-                end
-            end
-        end
-        
-        for _, dropdown in ipairs(allDropdowns) do
-            dropdown.UIStroke.Color = color
-        end
-        
-        for _, picker in ipairs(allColorPickers) do
-            picker.UIStroke.Color = color
-            picker.ApplyButton.BackgroundColor3 = color
-        end
-    end
-    
     local function setActiveTab(tab)
         if activeTab then
             activeTab.ScrollingFrame.Visible = false
@@ -178,7 +122,7 @@ function Leaf:CreateWindow(config)
         end
         activeTab = tab
         activeTab.ScrollingFrame.Visible = true
-        activeTab.TabButton.ImageColor3 = accentColor
+        activeTab.TabButton.ImageColor3 = Leaf.MenuColorValue.Value
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
@@ -199,7 +143,7 @@ function Leaf:CreateWindow(config)
         TabButton.Position = UDim2.new(0.64 + (#allTabs * 0.11), 0, 0.04, 0)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
-        TabButton.ImageColor3 = props.Opened and accentColor or Color3.fromRGB(130, 130, 130)
+        TabButton.ImageColor3 = props.Opened and Leaf.MenuColorValue.Value or Color3.fromRGB(130, 130, 130)
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -260,10 +204,10 @@ function Leaf:CreateWindow(config)
             local runService = game:GetService("RunService")
             
             TextButton.MouseButton1Click:Connect(function()
-                clickCount += 1
+                clickCount = clickCount + 1
                 local currentClick = clickCount
                 
-                Indicator.BackgroundColor3 = accentColor
+                Indicator.BackgroundColor3 = Leaf.MenuColorValue.Value
                 
                 if props.Callback then pcall(props.Callback) end
                 
@@ -277,7 +221,7 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -287,9 +231,9 @@ function Leaf:CreateWindow(config)
             local NameButton = Instance.new("TextLabel")
             local TextButton = Instance.new("TextButton")
             
-            DeButtonFrame.Name = "DeButtonFrame"
             DeButtonFrame.Parent = self.ScrollingFrame
-            DeButtonFrame.BackgroundColor3 = accentColor
+            DeButtonFrame.BackgroundColor3 = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = DeButtonFrame, property = "BackgroundColor3"})
             DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
             
@@ -313,7 +257,7 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback) end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -372,7 +316,7 @@ function Leaf:CreateWindow(config)
             local function updateToggle()
                 if state then
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
-                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = accentColor}):Play()
+                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Leaf.MenuColorValue.Value}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
@@ -389,7 +333,7 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback, state) end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
 
@@ -435,7 +379,8 @@ function Leaf:CreateWindow(config)
             UICornerFill.Parent = Fill
             
             Progress.Parent = Fill
-            Progress.BackgroundColor3 = accentColor
+            Progress.BackgroundColor3 = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = Progress, property = "BackgroundColor3"})
             Progress.Size = UDim2.new(0, 0, 1, 0)
             
             UICornerProg.CornerRadius = UDim.new(0, 4)
@@ -498,7 +443,7 @@ function Leaf:CreateWindow(config)
             end)
             
             updateSlider(default)
-            self.nextPosition += 55
+            self.nextPosition = self.nextPosition + 55
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -525,11 +470,12 @@ function Leaf:CreateWindow(config)
             SectionTitle.TextSize = 16
             
             Underline.Parent = SectionFrame
-            Underline.BackgroundColor3 = accentColor
+            Underline.BackgroundColor3 = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = Underline, property = "BackgroundColor3"})
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
             
-            self.nextPosition += 30
+            self.nextPosition = self.nextPosition + 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -544,7 +490,6 @@ function Leaf:CreateWindow(config)
             local UICornerList = Instance.new("UICorner")
             local ScrollingFrameList = Instance.new("ScrollingFrame")
             local UIListLayout = Instance.new("UIListLayout")
-            local UIStroke = Instance.new("UIStroke")
             
             DropdownFrame.Parent = self.ScrollingFrame
             DropdownFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -570,7 +515,8 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             Info.Parent = DropdownFrame
-            Info.BackgroundColor3 = accentColor
+            Info.BackgroundColor3 = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = Info, property = "BackgroundColor3"})
             Info.Position = UDim2.new(0.7, 0, 0.2, 0)
             Info.Size = UDim2.new(0.25, 0, 0.6, 0)
             Info.Font = Enum.Font.GothamBold
@@ -589,10 +535,6 @@ function Leaf:CreateWindow(config)
             
             UICornerList.CornerRadius = UDim.new(0, 4)
             UICornerList.Parent = DropdownList
-            
-            UIStroke.Parent = DropdownList
-            UIStroke.Color = accentColor
-            UIStroke.Thickness = 2
             
             ScrollingFrameList.Parent = DropdownList
             ScrollingFrameList.Active = true
@@ -625,7 +567,8 @@ function Leaf:CreateWindow(config)
                 OptionText.Size = UDim2.new(1, 0, 1, 0)
                 OptionText.Font = Enum.Font.GothamBold
                 OptionText.Text = option
-                OptionText.TextColor3 = accentColor
+                OptionText.TextColor3 = Leaf.MenuColorValue.Value
+                table.insert(Leaf.colorElements, {element = OptionText, property = "TextColor3"})
                 OptionText.TextSize = 14
                 OptionText.ZIndex = 2
                 
@@ -666,7 +609,7 @@ function Leaf:CreateWindow(config)
             end)
             
             table.insert(allDropdowns, DropdownList)
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -743,7 +686,8 @@ function Leaf:CreateWindow(config)
             local UIStroke = Instance.new("UIStroke")
             UIStroke.Parent = ChangeColor
             UIStroke.Thickness = 2
-            UIStroke.Color = accentColor
+            UIStroke.Color = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = UIStroke, property = "Color"})
             
             local ColorCanvas = Instance.new("Frame")
             ColorCanvas.Parent = ChangeColor
@@ -794,7 +738,8 @@ function Leaf:CreateWindow(config)
             
             local ApplyButton = Instance.new("TextButton")
             ApplyButton.Parent = ChangeColor
-            ApplyButton.BackgroundColor3 = accentColor
+            ApplyButton.BackgroundColor3 = Leaf.MenuColorValue.Value
+            table.insert(Leaf.colorElements, {element = ApplyButton, property = "BackgroundColor3"})
             ApplyButton.Position = UDim2.new(0.449, 0, 0.805, 0)
             ApplyButton.Size = UDim2.new(0, 60, 0, 27)
             ApplyButton.Font = Enum.Font.GothamBold
@@ -982,7 +927,7 @@ function Leaf:CreateWindow(config)
             end)
             
             table.insert(allColorPickers, ChangeColor)
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
@@ -1031,7 +976,7 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
-            self.nextPosition += 45
+            self.nextPosition = self.nextPosition + 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
         
