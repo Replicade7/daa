@@ -3,6 +3,7 @@ local Leaf = {}
 function Leaf:CreateWindow(config)
     local window = {}
     local accentColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
+    window.accentElements = {}
     
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
@@ -113,6 +114,12 @@ function Leaf:CreateWindow(config)
         for _, tab in ipairs(allTabs) do
             if activeTab == tab then
                 tab.TabButton.ImageColor3 = newColor
+            end
+        end
+        
+        for _, element in ipairs(window.accentElements) do
+            if element.updateColor then
+                element.updateColor(newColor)
             end
         end
     end
@@ -258,6 +265,13 @@ function Leaf:CreateWindow(config)
                 if props.Callback then pcall(props.Callback) end
             end)
             
+            local deButtonElement = {
+                updateColor = function(color)
+                    DeButtonFrame.BackgroundColor3 = color
+                end
+            }
+            table.insert(window.accentElements, deButtonElement)
+            
             self.nextPosition += 45
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
         end
@@ -327,6 +341,15 @@ function Leaf:CreateWindow(config)
             end
             
             updateToggle()
+            
+            local toggleElement = {
+                updateColor = function(color)
+                    if state then
+                        Indicator.BackgroundColor3 = color
+                    end
+                end
+            }
+            table.insert(window.accentElements, toggleElement)
             
             TextButton.MouseButton1Click:Connect(function()
                 state = not state
@@ -442,6 +465,13 @@ function Leaf:CreateWindow(config)
                 end
             end)
             
+            local sliderElement = {
+                updateColor = function(color)
+                    Progress.BackgroundColor3 = color
+                end
+            }
+            table.insert(window.accentElements, sliderElement)
+            
             updateSlider(default)
             self.nextPosition += 55
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -473,6 +503,13 @@ function Leaf:CreateWindow(config)
             Underline.BackgroundColor3 = accentColor
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
+            
+            local sectionElement = {
+                updateColor = function(color)
+                    Underline.BackgroundColor3 = color
+                end
+            }
+            table.insert(window.accentElements, sectionElement)
             
             self.nextPosition += 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -589,6 +626,13 @@ function Leaf:CreateWindow(config)
             ScrollingFrameList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
             
             local isOpen = false
+            
+            local dropdownElement = {
+                updateColor = function(color)
+                    Info.BackgroundColor3 = color
+                end
+            }
+            table.insert(window.accentElements, dropdownElement)
             
             TextButton.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
@@ -921,6 +965,14 @@ function Leaf:CreateWindow(config)
                     }
                 end
             end)
+            
+            local colorPickerElement = {
+                updateColor = function(color)
+                    UIStroke.Color = color
+                    ApplyButton.BackgroundColor3 = color
+                end
+            }
+            table.insert(window.accentElements, colorPickerElement)
             
             table.insert(allColorPickers, ChangeColor)
             self.nextPosition += 45
