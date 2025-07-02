@@ -1,22 +1,8 @@
 local Leaf = {}
-Leaf.Windows = {}
-Leaf.MenuColor = nil
-
-function Leaf.SetMenuColor(color)
-    Leaf.MenuColor = color
-    for _, window in ipairs(Leaf.Windows) do
-        window.accentColor = color
-        window:UpdateAccentColor()
-    end
-end
 
 function Leaf:CreateWindow(config)
-    if not Leaf.MenuColor then
-        Leaf.MenuColor = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
-    end
-    
     local window = {}
-    local accentColor = Leaf.MenuColor
+    local Menu_Color = Color3.fromRGB(config.Color[1], config.Color[2], config.Color[3])
     
     local MiniMenu = Instance.new("ScreenGui")
     local MiniMenuFrame = Instance.new("Frame")
@@ -44,6 +30,7 @@ function Leaf:CreateWindow(config)
     ImageMiniMenu.Position = UDim2.new(0.14, 0, 0.14, 0)
     ImageMiniMenu.Size = UDim2.new(0, 35, 0, 35)
     ImageMiniMenu.Image = "rbxassetid://"..config.LogoID
+    ImageMiniMenu.ImageColor3 = Menu_Color
     
     Bmenu.Name = "Bmenu"
     Bmenu.Parent = MiniMenuFrame
@@ -85,6 +72,7 @@ function Leaf:CreateWindow(config)
     
     MainframeUIStroke.Name = "MainframeUIStroke"
     MainframeUIStroke.Parent = Mainframe
+    MainframeUIStroke.Color = Menu_Color
     MainframeUIStroke.Thickness = 2
     
     TopBar.Name = "TopBar"
@@ -98,6 +86,7 @@ function Leaf:CreateWindow(config)
     
     TopBarUIStroke.Name = "TopBarUIStroke"
     TopBarUIStroke.Parent = TopBar
+    TopBarUIStroke.Color = Menu_Color
     TopBarUIStroke.Thickness = 2
     
     TextLabel.Parent = TopBar
@@ -115,23 +104,6 @@ function Leaf:CreateWindow(config)
     local allDropdowns = {}
     local allColorPickers = {}
     
-    window.colorableElements = {
-        {element = ImageMiniMenu, property = "ImageColor3"},
-        {element = MainframeUIStroke, property = "Color"},
-        {element = TopBarUIStroke, property = "Color"}
-    }
-    
-    function window:UpdateAccentColor()
-        for _, item in ipairs(self.colorableElements) do
-            item.element[item.property] = self.accentColor
-        end
-        if activeTab then
-            activeTab.TabButton.ImageColor3 = self.accentColor
-        end
-    end
-    
-    window:UpdateAccentColor()
-    
     local function setActiveTab(tab)
         if activeTab then
             activeTab.ScrollingFrame.Visible = false
@@ -139,13 +111,26 @@ function Leaf:CreateWindow(config)
         end
         activeTab = tab
         activeTab.ScrollingFrame.Visible = true
-        activeTab.TabButton.ImageColor3 = accentColor
+        activeTab.TabButton.ImageColor3 = Menu_Color
         
         for _, dropdown in ipairs(allDropdowns) do
             dropdown.Visible = false
         end
         for _, picker in ipairs(allColorPickers) do
             picker.Visible = false
+        end
+    end
+    
+    local function updateMenuColor()
+        ImageMiniMenu.ImageColor3 = Menu_Color
+        MainframeUIStroke.Color = Menu_Color
+        TopBarUIStroke.Color = Menu_Color
+        for _, tab in ipairs(allTabs) do
+            if tab == activeTab then
+                tab.TabButton.ImageColor3 = Menu_Color
+            else
+                tab.TabButton.ImageColor3 = Color3.fromRGB(130, 130, 130)
+            end
         end
     end
     
@@ -160,7 +145,7 @@ function Leaf:CreateWindow(config)
         TabButton.Position = UDim2.new(0.64 + (#allTabs * 0.11), 0, 0.04, 0)
         TabButton.Size = UDim2.new(0, 25, 0, 25)
         TabButton.Image = props.Image
-        TabButton.ImageColor3 = props.Opened and accentColor or Color3.fromRGB(130, 130, 130)
+        TabButton.ImageColor3 = props.Opened and Menu_Color or Color3.fromRGB(130, 130, 130)
         
         UICornerTab.CornerRadius = UDim.new(0, 4)
         UICornerTab.Parent = TabButton
@@ -224,7 +209,7 @@ function Leaf:CreateWindow(config)
                 clickCount += 1
                 local currentClick = clickCount
                 
-                Indicator.BackgroundColor3 = accentColor
+                Indicator.BackgroundColor3 = Menu_Color
                 
                 if props.Callback then pcall(props.Callback) end
                 
@@ -249,7 +234,7 @@ function Leaf:CreateWindow(config)
             local TextButton = Instance.new("TextButton")
             
             DeButtonFrame.Parent = self.ScrollingFrame
-            DeButtonFrame.BackgroundColor3 = accentColor
+            DeButtonFrame.BackgroundColor3 = Menu_Color
             DeButtonFrame.Size = UDim2.new(0.85, 0, 0, 40)
             DeButtonFrame.Position = UDim2.new(0.5, -85, 0, self.nextPosition)
             
@@ -332,7 +317,7 @@ function Leaf:CreateWindow(config)
             local function updateToggle()
                 if state then
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.6, 0, 0.1, 0)}):Play()
-                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = accentColor}):Play()
+                    tweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Menu_Color}):Play()
                     tweenService:Create(Circle, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 255, 255)}):Play()
                 else
                     tweenService:Create(Circle, TweenInfo.new(0.2), {Position = UDim2.new(0.05, 0, 0.1, 0)}):Play()
@@ -395,7 +380,7 @@ function Leaf:CreateWindow(config)
             UICornerFill.Parent = Fill
             
             Progress.Parent = Fill
-            Progress.BackgroundColor3 = accentColor
+            Progress.BackgroundColor3 = Menu_Color
             Progress.Size = UDim2.new(0, 0, 1, 0)
             
             UICornerProg.CornerRadius = UDim.new(0, 4)
@@ -410,8 +395,6 @@ function Leaf:CreateWindow(config)
             Snumber.TextColor3 = Color3.fromRGB(255, 255, 255)
             Snumber.TextSize = 16
             Snumber.TextXAlignment = Enum.TextXAlignment.Right
-            
-            table.insert(window.colorableElements, {element = Progress, property = "BackgroundColor3"})
             
             local currentValue = default
             local dragging = false
@@ -487,11 +470,9 @@ function Leaf:CreateWindow(config)
             SectionTitle.TextSize = 16
             
             Underline.Parent = SectionFrame
-            Underline.BackgroundColor3 = accentColor
+            Underline.BackgroundColor3 = Menu_Color
             Underline.Position = UDim2.new(0, 0, 1, -2)
             Underline.Size = UDim2.new(1, 0, 0, 2)
-            
-            table.insert(window.colorableElements, {element = Underline, property = "BackgroundColor3"})
             
             self.nextPosition += 30
             self.ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, self.nextPosition + 10)
@@ -533,7 +514,7 @@ function Leaf:CreateWindow(config)
             TextButton.Text = ""
             
             Info.Parent = DropdownFrame
-            Info.BackgroundColor3 = accentColor
+            Info.BackgroundColor3 = Menu_Color
             Info.Position = UDim2.new(0.7, 0, 0.2, 0)
             Info.Size = UDim2.new(0.25, 0, 0.6, 0)
             Info.Font = Enum.Font.GothamBold
@@ -543,8 +524,6 @@ function Leaf:CreateWindow(config)
             
             UICornerInfo.CornerRadius = UDim.new(0, 4)
             UICornerInfo.Parent = Info
-            
-            table.insert(window.colorableElements, {element = Info, property = "BackgroundColor3"})
             
             DropdownList.Parent = MenuFrame
             DropdownList.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -586,7 +565,7 @@ function Leaf:CreateWindow(config)
                 OptionText.Size = UDim2.new(1, 0, 1, 0)
                 OptionText.Font = Enum.Font.GothamBold
                 OptionText.Text = option
-                OptionText.TextColor3 = accentColor
+                OptionText.TextColor3 = Menu_Color
                 OptionText.TextSize = 14
                 OptionText.ZIndex = 2
                 
@@ -633,7 +612,7 @@ function Leaf:CreateWindow(config)
         
         function tab:CreateColorPicker(props)
             local Name = props.Name
-            local Color = props.Color
+            local Color = props.Color or props.DefaultColor or Color3.new(1, 1, 1)
             local Callback = props.Callback
             
             local ColorPickerFrame = Instance.new("Frame")
@@ -704,7 +683,7 @@ function Leaf:CreateWindow(config)
             local UIStroke = Instance.new("UIStroke")
             UIStroke.Parent = ChangeColor
             UIStroke.Thickness = 2
-            UIStroke.Color = accentColor
+            UIStroke.Color = Menu_Color
             
             local ColorCanvas = Instance.new("Frame")
             ColorCanvas.Parent = ChangeColor
@@ -755,7 +734,7 @@ function Leaf:CreateWindow(config)
             
             local ApplyButton = Instance.new("TextButton")
             ApplyButton.Parent = ChangeColor
-            ApplyButton.BackgroundColor3 = accentColor
+            ApplyButton.BackgroundColor3 = Menu_Color
             ApplyButton.Position = UDim2.new(0.449, 0, 0.805, 0)
             ApplyButton.Size = UDim2.new(0, 60, 0, 27)
             ApplyButton.Font = Enum.Font.GothamBold
@@ -767,8 +746,6 @@ function Leaf:CreateWindow(config)
             local UICornerApply = Instance.new("UICorner")
             UICornerApply.CornerRadius = UDim.new(0, 4)
             UICornerApply.Parent = ApplyButton
-            
-            table.insert(window.colorableElements, {element = ApplyButton, property = "BackgroundColor3"})
             
             local CancelButton = Instance.new("TextButton")
             CancelButton.Parent = ChangeColor
@@ -913,6 +890,10 @@ function Leaf:CreateWindow(config)
                 Color = ColorIndicator.BackgroundColor3
                 if Callback then
                     Callback(Color)
+                    if Name == "Menu Color" then
+                        Menu_Color = Color
+                        updateMenuColor()
+                    end
                 end
             end)
             
@@ -1069,7 +1050,6 @@ function Leaf:CreateWindow(config)
         ScreenGui.Enabled = not ScreenGui.Enabled
     end)
     
-    table.insert(Leaf.Windows, window)
     return window
 end
 
