@@ -553,7 +553,8 @@ function Leaf:CreateWindow(config)
             
             ScrollingFrameList.Parent = DropdownList
             ScrollingFrameList.Active = true
-            ScrollingFrameList.BackgroundTransparency = 1
+            ScrollingFrameSc
+            rollingFrameList.BackgroundTransparency = 1
             ScrollingFrameList.Size = UDim2.new(1, 0, 1, 0)
             ScrollingFrameList.CanvasSize = UDim2.new(0, 0, 0, 0)
             ScrollingFrameList.ScrollBarThickness = 3
@@ -833,6 +834,10 @@ function Leaf:CreateWindow(config)
             local function updateColor()
                 local newColor = Color3.fromHSV(currentHue, currentSat, currentVal)
                 ColorIndicator.BackgroundColor3 = newColor
+                Leaf.MenuColorValue.Value = newColor
+                if activeTab then
+                    activeTab.TabButton.ImageColor3 = newColor
+                end
             end
             
             local function updateHueSelector(input)
@@ -910,6 +915,9 @@ function Leaf:CreateWindow(config)
                 Color = ColorIndicator.BackgroundColor3
                 if Callback then
                     Callback(Color)
+                end
+                if activeTab then
+                    activeTab.TabButton.ImageColor3 = Color
                 end
             end)
             
